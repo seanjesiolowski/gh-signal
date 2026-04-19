@@ -1,4 +1,4 @@
-# GH-Signal
+# GH Signal
 
 A real-time data pipeline that ingests public GitHub events, processes them, and exposes analytics via an API.
 
