@@ -18,7 +18,7 @@ GitHub Events API
 ↓
 Ingestion Service (Python)
 ↓
-Processing Layer
+Processing Layer - models?? (4/22/2026)
 ↓
 PostgreSQL Database
 ↓
