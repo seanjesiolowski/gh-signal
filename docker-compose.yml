@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: github_events
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d github_events"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/github_events
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  ingestor:
+    build: .
+    command: python -m ingestion.fetch_events
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/github_events
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  dashboard:
+    build: .
+    command: streamlit run dashboard.py --server.address 0.0.0.0 --server.port 8501
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/github_events
+    ports:
+      - "8501:8501"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -1,0 +1,16 @@
+services:
+  api:
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./app:/app/app
+
+  ingestor:
+    volumes:
+      - ./app:/app/app
+      - ./ingestion:/app/ingestion
+
+  dashboard:
+    command: streamlit run dashboard.py --server.address 0.0.0.0 --server.port 8501 --server.runOnSave true
+    volumes:
+      - ./app:/app/app
+      - ./dashboard.py:/app/dashboard.py
