@@ -1,4 +1,3 @@
-# import altair as alt
 import pandas as pd
 import streamlit as st
 from sqlalchemy import text
@@ -33,12 +32,6 @@ if df.empty:
     )
     st.stop()
 
-# st.subheader("Events per minute (UTC)")
-# per_minute = (
-#     df.set_index("created_at").resample("1min").size().rename("events")
-# )
-# st.line_chart(per_minute)
-
 st.subheader("Event types")
 st.bar_chart(df["type"].value_counts())
 
@@ -49,27 +42,3 @@ with col_repos:
 with col_actors:
     st.subheader("Top 10 actors")
     st.bar_chart(df["actor"].value_counts().head(10))
-
-# st.subheader("Activity heatmap (UTC)")
-# heat = (
-#     df.assign(
-#         day=df["created_at"].dt.date.astype(str),
-#         hour=df["created_at"].dt.hour,
-#     )
-#     .groupby(["day", "hour"])
-#     .size()
-#     .reset_index(name="events")
-# )
-# if heat["day"].nunique() < 2:
-#     st.caption("Heatmap is most useful with at least a couple of days of data — keep ingesting.")
-# heatmap = (
-#     alt.Chart(heat)
-#     .mark_rect()
-#     .encode(
-#         x=alt.X("hour:O", title="Hour of day (UTC)"),
-#         y=alt.Y("day:O", title="Date"),
-#         color=alt.Color("events:Q", scale=alt.Scale(scheme="blues")),
-#         tooltip=["day", "hour", "events"],
-#     )
-# )
-# st.altair_chart(heatmap, width="stretch")

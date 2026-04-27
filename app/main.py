@@ -5,7 +5,7 @@ from .crud import get_top_repos
 
 app = FastAPI()
 
-# Dependency
+
 def get_db():
     db = SessionLocal()
     try:

@@ -1,21 +1,25 @@
-from datetime import datetime
-from sqlalchemy import select
+from datetime import datetime, timezone
+from typing import Any
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
 from .models import Event, Repo
 
-def create_event(db: Session, event_data: dict): # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
+
+def create_event(db: Session, event_data: dict[str, Any]) -> None:
     event = Event(
-        id=event_data["id"],  # "natural key" design // The upstream ID is already unique, stable, and opaque — it meets every requirement for a primary key.
+        id=event_data["id"],
         type=event_data["type"],
         actor=event_data["actor"]["login"],
         repo=event_data["repo"]["name"],
-        created_at=event_data["created_at"]
+        created_at=event_data["created_at"],
     )
-    db.merge(event)  # avoids duplicates (important) // GitHub is the source of truth for event identity, and the app trusts it.
+    db.merge(event)
     db.commit()
 
+
 def get_top_repos(db: Session, limit: int = 10):
-    from sqlalchemy import func
     return (
         db.query(Event.repo, func.count(Event.id).label("count"))
         .group_by(Event.repo)
@@ -24,7 +28,8 @@ def get_top_repos(db: Session, limit: int = 10):
         .all()
     )
 
-def repos_needing_enrichment(db: Session, limit: int = 20):
+
+def repos_needing_enrichment(db: Session, limit: int = 20) -> list[str]:
     enriched = select(Repo.name)
     return [
         r[0] for r in
@@ -35,12 +40,13 @@ def repos_needing_enrichment(db: Session, limit: int = 20):
           .all()
     ]
 
-def upsert_repo(db: Session, name: str, data: dict): # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
+
+def upsert_repo(db: Session, name: str, data: dict[str, Any]) -> None:
     repo = Repo(
         name=name,
-        language=data.get("language"), # pyright: ignore[reportUnknownMemberType]
-        topics=data.get("topics", []), # pyright: ignore[reportUnknownMemberType]
-        fetched_at=datetime.utcnow(), # pyright: ignore[reportDeprecated]
+        language=data.get("language"),
+        topics=data.get("topics", []),
+        fetched_at=datetime.now(timezone.utc),
     )
     db.merge(repo)
     db.commit()

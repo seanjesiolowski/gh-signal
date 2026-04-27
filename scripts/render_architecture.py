@@ -17,11 +17,11 @@ ORANGE = "#d29922"
 PURPLE = "#a371f7"
 RED = "#f85149"
 
-fig, ax = plt.subplots(figsize=(13, 8.5), dpi=160)
+fig, ax = plt.subplots(figsize=(13, 10), dpi=160)
 fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
 ax.set_xlim(0, 13)
-ax.set_ylim(0, 8.5)
+ax.set_ylim(0, 10)
 ax.set_axis_off()
 
 
@@ -53,59 +53,59 @@ def arrow(x1, y1, x2, y2, label="", color=MUTED, curve=0.0, label_offset=(0, 0.2
 
 
 # Title
-ax.text(6.5, 8.05, "gh-signal", ha="center", color=FG, fontsize=22, fontweight="bold")
-ax.text(6.5, 7.65,
-        "Real-time pipeline that ingests GitHub public events and surfaces what devs are building in",
+ax.text(6.5, 9.55, "gh-signal", ha="center", color=FG, fontsize=22, fontweight="bold")
+ax.text(6.5, 9.15,
+        "Real-time pipeline that ingests GitHub public events and enriches them with repo metadata",
         ha="center", color=MUTED, fontsize=10.5)
 
-# External source
-box(0.4, 5.6, 3.0, 1.1, "GitHub Events API", "api.github.com/events", ACCENT)
+# --- Sources column (left) ---
+box(0.4, 7.1, 3.0, 1.1, "GitHub Events API", "api.github.com/events", ACCENT)
+box(0.4, 5.3, 3.0, 1.1, "GitHub Repos API", "api.github.com/repos/{name}", ACCENT)
 
-# Ingestor
-box(5.0, 5.6, 3.0, 1.1, "Ingestor", "ingestion/fetch_events.py", ORANGE)
+# --- Workers column (middle) ---
+box(5.0, 7.1, 3.0, 1.1, "Ingestor", "ingestion/fetch_events.py", ORANGE)
+box(5.0, 5.3, 3.0, 1.1, "Enricher", "ingestion/enrich_repos.py", ORANGE)
 
-# Postgres
-box(9.6, 5.6, 3.0, 1.1, "PostgreSQL 16", "github_events  •  port 5433", GREEN)
+# --- Storage column (right) — single Postgres spans both ingest paths ---
+box(9.6, 5.3, 3.0, 2.9, "PostgreSQL 16", "events  •  repos  •  port 5433", GREEN)
 
-# FastAPI
-box(0.4, 2.5, 3.0, 1.1, "FastAPI", "app/main.py  •  :8000", PURPLE)
+# --- Serving row ---
+box(0.4, 2.7, 3.0, 1.1, "FastAPI", "app/main.py  •  :8000", PURPLE)
+box(5.0, 2.7, 3.0, 1.1, "Streamlit Dashboard", "dashboard.py  •  :8501", PURPLE)
+box(9.6, 2.7, 3.0, 1.1, "pytest + CI", "tests/  •  GitHub Actions", RED)
 
-# Dashboard
-box(5.0, 2.5, 3.0, 1.1, "Streamlit Dashboard", "dashboard.py  •  :8501", PURPLE)
+# --- Consumers row ---
+box(2.7, 0.7, 3.0, 1.0, "REST clients", "GET /top-repos", MUTED)
+box(6.3, 0.7, 3.0, 1.0, "Browser", "localhost:8501", MUTED)
 
-# Tests / CI
-box(9.6, 2.5, 3.0, 1.1, "pytest + CI", "tests/  •  GitHub Actions", RED)
+# --- Arrows: ingestion path (top) ---
+arrow(3.4, 7.65, 5.0, 7.65, "poll every ~60s", ACCENT)
+arrow(8.0, 7.65, 9.6, 7.0, "upsert events", ORANGE, curve=0.0, label_offset=(0, 0.25))
 
-# Consumers
-box(2.7, 0.5, 3.0, 1.0, "REST clients", "GET /top-repos", MUTED)
-box(6.3, 0.5, 3.0, 1.0, "Browser", "localhost:8501", MUTED)
+# --- Arrows: enrichment path (bottom of top half) ---
+arrow(3.4, 5.85, 5.0, 5.85, "fetch repo metadata", ACCENT)
+arrow(8.0, 5.85, 9.6, 6.5, "upsert repos", ORANGE, curve=0.0, label_offset=(0, 0.25))
+# Enricher reads pending repo names from the events table
+arrow(9.6, 5.55, 8.0, 5.55, "read pending repos", GREEN, label_offset=(0, -0.3))
 
-# Arrows: source -> ingestor -> db
-arrow(3.4, 6.15, 5.0, 6.15, "poll every ~60s", ACCENT)
-arrow(8.0, 6.15, 9.6, 6.15, "upsert events", ORANGE)
+# --- Arrows: storage -> serving ---
+arrow(9.7, 5.3, 3.4, 3.8, "SQLAlchemy read", GREEN, curve=-0.18, label_offset=(0, -0.25))
+arrow(10.6, 5.3, 6.5, 3.8, "SQL read", GREEN, curve=-0.12, label_offset=(0.2, 0.0))
+arrow(11.5, 5.3, 11.1, 3.8, "integration tests", RED)
 
-# DB -> FastAPI and DB -> Dashboard (read paths)
-arrow(9.7, 5.6, 3.4, 3.6, "SQLAlchemy read", GREEN, curve=-0.18, label_offset=(0, -0.25))
-arrow(10.6, 5.6, 6.5, 3.6, "SQL read", GREEN, curve=-0.12, label_offset=(0.2, 0.0))
-
-# DB -> tests (validates schema/queries)
-arrow(11.5, 5.6, 11.1, 3.6, "integration tests", RED, curve=0.0)
-
-# FastAPI -> REST clients
-arrow(1.9, 2.5, 3.7, 1.5, "JSON", PURPLE, curve=0.1)
-
-# Dashboard -> Browser
-arrow(6.5, 2.5, 7.3, 1.5, "HTTP", PURPLE, curve=-0.1)
+# --- Arrows: serving -> consumers ---
+arrow(1.9, 2.7, 3.7, 1.7, "JSON", PURPLE, curve=0.1)
+arrow(6.5, 2.7, 7.3, 1.7, "HTTP", PURPLE, curve=-0.1)
 
 # Compose grouping note
 ax.text(6.5, 4.55,
-        "── all services orchestrated via docker-compose.yml ──",
+        "── all services orchestrated via docker-compose.yml; schema managed by Alembic ──",
         ha="center", color=MUTED, fontsize=9, style="italic")
 
 # Legend
 legend_handles = [
     mpatches.Patch(color=ACCENT, label="External source"),
-    mpatches.Patch(color=ORANGE, label="Ingestion"),
+    mpatches.Patch(color=ORANGE, label="Ingestion / enrichment"),
     mpatches.Patch(color=GREEN,  label="Storage"),
     mpatches.Patch(color=PURPLE, label="Serving"),
     mpatches.Patch(color=RED,    label="Quality / CI"),

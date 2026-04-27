@@ -1,7 +1,7 @@
 import requests
 import time
 from app.db import SessionLocal
-from app.crud import create_event # pyright: ignore[reportUnknownVariableType]
+from app.crud import create_event
 
 GITHUB_EVENTS_URL = "https://api.github.com/events"
 
