@@ -35,6 +35,16 @@ services:
       postgres:
         condition: service_healthy
 
+  enricher:
+    build: .
+    command: python -m ingestion.enrich_repos
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/github_events
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   dashboard:
     build: .
     command: streamlit run dashboard.py --server.address 0.0.0.0 --server.port 8501
