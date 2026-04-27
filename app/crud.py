@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any
 
 from sqlalchemy import func, select
@@ -23,6 +23,20 @@ def get_top_repos(db: Session, limit: int = 10):
     return (
         db.query(Event.repo, func.count(Event.id).label("count"))
         .group_by(Event.repo)
+        .order_by(func.count(Event.id).desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def get_trending_languages(db: Session, hours: int = 24, limit: int = 10):
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    return (
+        db.query(Repo.language, func.count(Event.id).label("count"))
+        .join(Repo, Repo.name == Event.repo)
+        .filter(Event.created_at >= cutoff)
+        .filter(Repo.language.isnot(None))
+        .group_by(Repo.language)
         .order_by(func.count(Event.id).desc())
         .limit(limit)
         .all()

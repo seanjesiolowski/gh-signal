@@ -1,4 +1,6 @@
-from app.crud import create_event
+from datetime import datetime, timezone
+
+from app.crud import create_event, upsert_repo
 
 
 def test_root(client):
@@ -37,3 +39,21 @@ def test_top_repos_respects_limit(client, db_session, make_event):
 
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+
+def test_languages_trending_joins_repos_and_filters_window(client, db_session, make_event):
+    upsert_repo(db_session, "org/python", {"language": "Python", "topics": []})
+    upsert_repo(db_session, "org/js", {"language": "JavaScript", "topics": []})
+
+    create_event(db_session, make_event(id="e1", repo="org/python", created_at=datetime.now(timezone.utc)))
+    create_event(db_session, make_event(id="e2", repo="org/python", created_at=datetime.now(timezone.utc)))
+    create_event(db_session, make_event(id="e3", repo="org/js", created_at=datetime.now(timezone.utc)))
+    create_event(db_session, make_event(id="e4", repo="org/python", created_at=datetime(2026, 4, 22, tzinfo=timezone.utc)))
+
+    response = client.get("/languages/trending?window=24")
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {"language": "Python", "count": 2},
+        {"language": "JavaScript", "count": 1},
+    ]
