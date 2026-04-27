@@ -11,6 +11,8 @@ RUN pip install -r requirements.txt
 
 COPY app ./app
 COPY ingestion ./ingestion
+COPY migrations ./migrations
+COPY alembic.ini .
 COPY dashboard.py .
 
 EXPOSE 8000 8501

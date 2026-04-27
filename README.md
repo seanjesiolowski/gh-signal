@@ -16,24 +16,23 @@ This project builds a lightweight backend/data engineering system using the GitH
 
 ![gh-signal architecture](docs/architecture.png)
 
-GitHub Events API
-↓
-Ingestion Service (Python)
-↓
-Processing Layer - models?? (4/22/2026)
-↓
-PostgreSQL Database
-↓
-FastAPI Server
-↓
-Analytics Endpoints
+```
+GitHub Events API ──► Ingestion Service ──┐
+                                          ├──► PostgreSQL ──► FastAPI ──► Analytics Endpoints
+GitHub Repos API  ──► Enrichment Service ─┘                       │
+                                                                  └──► Streamlit Dashboard
+```
+
+The ingestion service polls the public events firehose; the enrichment service walks the resulting repo names and pulls language/topic metadata so the analytics layer can answer "what are devs *actually building in* right now?"
 
 ## Tech Stack
 
 - Backend: FastAPI
 - Database: PostgreSQL
 - ORM: SQLAlchemy
-- Ingestion: Python + Requests
+- Migrations: Alembic
+- Ingestion + enrichment: Python + Requests
+- Dashboard: Streamlit
 - (Planned) Queue: Redis / Kafka
 - (Planned) Orchestration: Airflow
 
@@ -44,9 +43,15 @@ Analytics Endpoints
 - Handles duplicate events using upsert logic
 - Extracts key fields: repo, actor, event type, timestamp
 
+### Repo Enrichment
+- Background worker fetches repo metadata (language, topics) for repos that appear in the events stream
+- Authenticated against GitHub with a personal access token (5,000 req/hr)
+- Skips deleted/private repos and rate-limit responses gracefully
+
 ### Storage
-- Normalized event schema
-- Indexed fields for fast queries
+- Normalized `events` schema with indexed fields for fast queries
+- Separate `repos` table for enrichment data, joined on repo name
+- Schema versioned via Alembic migrations
 
 ### API Endpoints
 

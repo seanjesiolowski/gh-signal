@@ -1,10 +1,7 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from .db import SessionLocal, engine
-from .models import Base
+from .db import SessionLocal
 from .crud import get_top_repos
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

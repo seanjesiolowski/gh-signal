@@ -1,4 +1,4 @@
-from app.crud import create_event, get_top_repos
+from app.crud import create_event, get_top_repos, repos_needing_enrichment, upsert_repo
 from app.models import Event
 
 
@@ -42,3 +42,32 @@ def test_get_top_repos_respects_limit(db_session, make_event):
 
 def test_get_top_repos_empty(db_session):
     assert get_top_repos(db_session) == []
+
+
+def test_repos_needing_enrichment_excludes_already_enriched(db_session, make_event):
+    create_event(db_session, make_event(id="1", repo="org/done"))
+    create_event(db_session, make_event(id="2", repo="org/pending"))
+    upsert_repo(db_session, "org/done", {"language": "Python", "topics": []})
+
+    assert repos_needing_enrichment(db_session) == ["org/pending"]
+
+
+def test_repos_needing_enrichment_deduplicates(db_session, make_event):
+    create_event(db_session, make_event(id="1", repo="org/repo"))
+    create_event(db_session, make_event(id="2", repo="org/repo"))
+
+    assert repos_needing_enrichment(db_session) == ["org/repo"]
+
+
+def test_repos_needing_enrichment_respects_limit(db_session, make_event):
+    for i in range(5):
+        create_event(db_session, make_event(id=str(i), repo=f"org/r{i}"))
+
+    assert len(repos_needing_enrichment(db_session, limit=3)) == 3
+
+
+def test_repos_needing_enrichment_empty_when_all_enriched(db_session, make_event):
+    create_event(db_session, make_event(id="1", repo="org/done"))
+    upsert_repo(db_session, "org/done", {"language": "Go", "topics": []})
+
+    assert repos_needing_enrichment(db_session) == []

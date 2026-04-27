@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from .models import Event, Repo
 
@@ -24,11 +25,11 @@ def get_top_repos(db: Session, limit: int = 10):
     )
 
 def repos_needing_enrichment(db: Session, limit: int = 20):
-    enriched = db.query(Repo.name).subquery()
+    enriched = select(Repo.name)
     return [
         r[0] for r in
         db.query(Event.repo)
-          .filter(Event.repo.notin_(enriched)) # pyright: ignore[reportArgumentType]
+          .filter(Event.repo.notin_(enriched))
           .distinct()
           .limit(limit)
           .all()
