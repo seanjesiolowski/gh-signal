@@ -4,11 +4,12 @@ from app.db import SessionLocal
 from app.crud import create_event
 
 GITHUB_EVENTS_URL = "https://api.github.com/events"
+REQUEST_TIMEOUT = (5, 30)  # (connect, read) seconds
 
 def fetch_and_store():
     db = SessionLocal()
 
-    response = requests.get(GITHUB_EVENTS_URL)
+    response = requests.get(GITHUB_EVENTS_URL, timeout=REQUEST_TIMEOUT)
     events = response.json()
 
     for event in events:

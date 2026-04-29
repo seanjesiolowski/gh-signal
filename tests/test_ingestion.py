@@ -10,7 +10,7 @@ def test_fetch_and_store_writes_events(db_session, db_sessionmaker, make_event, 
     payload = [make_event(id="1", repo="org/a"), make_event(id="2", repo="org/b")]
     fake_response = MagicMock()
     fake_response.json.return_value = payload
-    monkeypatch.setattr(fe.requests, "get", lambda url: fake_response)
+    monkeypatch.setattr(fe.requests, "get", lambda *a, **kw: fake_response)
 
     fe.fetch_and_store()
 
@@ -27,7 +27,7 @@ def test_fetch_and_store_continues_after_bad_event(db_session, db_sessionmaker, 
     ]
     fake_response = MagicMock()
     fake_response.json.return_value = payload
-    monkeypatch.setattr(fe.requests, "get", lambda url: fake_response)
+    monkeypatch.setattr(fe.requests, "get", lambda *a, **kw: fake_response)
 
     fe.fetch_and_store()
 
@@ -45,4 +45,4 @@ def test_fetch_and_store_calls_github_events_url(db_session, db_sessionmaker, mo
 
     fe.fetch_and_store()
 
-    mock_get.assert_called_once_with(fe.GITHUB_EVENTS_URL)
+    mock_get.assert_called_once_with(fe.GITHUB_EVENTS_URL, timeout=fe.REQUEST_TIMEOUT)

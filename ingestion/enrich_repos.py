@@ -6,6 +6,7 @@ from app.crud import repos_needing_enrichment, upsert_repo
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"Bearer {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
+REQUEST_TIMEOUT = (5, 30)  # (connect, read) seconds
 
 def enrich_batch():
     db = SessionLocal()
@@ -13,7 +14,11 @@ def enrich_batch():
         names = repos_needing_enrichment(db, limit=20)
         for name in names:
             try:
-                r = requests.get(f"https://api.github.com/repos/{name}", headers=HEADERS)
+                r = requests.get(
+                    f"https://api.github.com/repos/{name}",
+                    headers=HEADERS,
+                    timeout=REQUEST_TIMEOUT,
+                )
                 if r.status_code == 200:
                     upsert_repo(db, name, r.json())
                 else:
