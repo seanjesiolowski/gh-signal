@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from .models import Event, Repo
 
 
+# CONSIDER USING DATACLASSES FOR THE FUNCTIONS TO IMPROVE TYPE SAFETY AND CLARITY
 def create_event(db: Session, event_data: dict[str, Any]) -> None:
     event = Event(
         id=event_data["id"],
