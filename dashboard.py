@@ -7,7 +7,7 @@ from sqlalchemy import text
 from app.db import engine
 
 st.set_page_config(page_title="GH Signal Dashboard", layout="wide")
-st.title("GH Signal — live ingestion dashboard")
+st.title("GH Signal — live ingestion and enrichment dashboard")
 
 
 @st.cache_data(ttl=30)
