@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, Query
 from sqlalchemy.orm import Session
 from .db import SessionLocal
-from .crud import get_top_repos, get_trending_languages
+from .crud import get_top_repos, get_trending_languages, get_trending_topics
 
 app = FastAPI()
 
@@ -24,6 +24,16 @@ def top_repos(
 ):
     results = get_top_repos(db, limit)
     return [{"repo": r[0], "count": r[1]} for r in results]
+
+
+@app.get("/topics/trending")
+def topics_trending(
+    window: int = Query(24, ge=1, le=24 * 30),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    results = get_trending_topics(db, window, limit)
+    return [{"topic": r[0], "count": r[1]} for r in results]
 
 
 @app.get("/languages/trending")

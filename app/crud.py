@@ -44,6 +44,23 @@ def get_trending_languages(db: Session, hours: int = 24, limit: int = 10):
     )
 
 
+def get_trending_topics(db: Session, hours: int = 24, limit: int = 10):
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    # json_array_elements_text is PostgreSQL-specific
+    topic = func.json_array_elements_text(Repo.topics).column_valued("topic")
+    return (
+        db.query(topic, func.count(Event.id).label("count"))
+        .select_from(Event)
+        .join(Repo, Repo.name == Event.repo)
+        .filter(Event.created_at >= cutoff)
+        .filter(Repo.topics.isnot(None))
+        .group_by(topic)
+        .order_by(func.count(Event.id).desc())
+        .limit(limit)
+        .all()
+    )
+
+
 def repos_needing_enrichment(db: Session, limit: int = 20) -> list[str]:
     enriched = select(Repo.name)
     return [

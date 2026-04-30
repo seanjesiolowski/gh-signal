@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import pytest
+
 from app.crud import create_event, upsert_repo
 
 
@@ -39,6 +41,25 @@ def test_top_repos_respects_limit(client, db_session, make_event):
 
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+
+@pytest.mark.skip(reason="requires PostgreSQL — json_array_elements_text not available in SQLite test env")
+def test_topics_trending_aggregates_by_topic(client, db_session, make_event):
+    upsert_repo(db_session, "org/web", {"language": "Python", "topics": ["web", "api"]})
+    upsert_repo(db_session, "org/ml", {"language": "Python", "topics": ["ml", "web"]})
+
+    create_event(db_session, make_event(id="e1", repo="org/web", created_at=datetime.now(timezone.utc)))
+    create_event(db_session, make_event(id="e2", repo="org/web", created_at=datetime.now(timezone.utc)))
+    create_event(db_session, make_event(id="e3", repo="org/ml", created_at=datetime.now(timezone.utc)))
+
+    response = client.get("/topics/trending?window=24")
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {"topic": "web", "count": 3},
+        {"topic": "api", "count": 2},
+        {"topic": "ml", "count": 1},
+    ]
 
 
 def test_languages_trending_joins_repos_and_filters_window(client, db_session, make_event):
