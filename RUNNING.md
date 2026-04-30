@@ -36,10 +36,13 @@ The `enricher` service needs a GitHub personal access token in [.env](.env) as `
 - Health check: <http://127.0.0.1:8000/>
 - Top repos: <http://127.0.0.1:8000/top-repos>
 - Top repos with custom limit: <http://127.0.0.1:8000/top-repos?limit=25>
+- Trending languages (last 24 h): <http://127.0.0.1:8000/languages/trending>
+- Trending topics (last 24 h): <http://127.0.0.1:8000/topics/trending>
+- Custom window/limit: <http://127.0.0.1:8000/languages/trending?window=168&limit=20>
 - Interactive docs: <http://127.0.0.1:8000/docs>
 - Streamlit dashboard: <http://localhost:8501>
 
-The `/top-repos` endpoint and the dashboard return empty until the ingestor has written at least one batch.
+`/top-repos` returns data as soon as the ingestor has written at least one batch. `/languages/trending` and `/topics/trending` return data only after the enricher has run and populated the `repos` table.
 
 ### Common commands
 
@@ -145,7 +148,7 @@ In a third terminal (with the venv activated):
 streamlit run dashboard.py
 ```
 
-Streamlit opens <http://localhost:8501> with charts for events-per-minute, event-type breakdown, top repos/actors, and an hour-by-day activity heatmap. Data is cached for 30 seconds — use the **Refresh** button to clear the cache and re-query Postgres.
+Streamlit opens <http://localhost:8501> with charts for event-type breakdown, top repos, top actors, trending languages, and trending topics. Data is cached for 30 seconds — use the **Refresh** button to clear the cache and re-query Postgres. The trending languages and topics panels show an info message until the enricher has run.
 
 ---
 
