@@ -38,16 +38,17 @@ services:
 
   ingestor:
     build: .
-    command: python -m ingestion.fetch_events
+    command: sh -c "while true; do python -m ingestion.fetch_events; sleep 60; done"
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/github_events
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
     depends_on:
       migrate:
         condition: service_completed_successfully
 
   enricher:
     build: .
-    command: python -m ingestion.enrich_repos
+    command: sh -c "while true; do python -m ingestion.enrich_repos; sleep 60; done"
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/github_events
       GITHUB_TOKEN: ${GITHUB_TOKEN}

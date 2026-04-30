@@ -1,5 +1,4 @@
 import os
-import time
 import requests
 from app.db import SessionLocal
 from app.crud import repos_needing_enrichment, upsert_repo
@@ -30,7 +29,5 @@ def enrich_batch():
         db.close()
 
 if __name__ == "__main__":
-    while True:
-        print("Enriching repos...")
-        enrich_batch()
-        time.sleep(60)
+    print("Enriching repos...")
+    enrich_batch()

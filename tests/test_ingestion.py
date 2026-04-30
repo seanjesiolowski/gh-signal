@@ -45,4 +45,4 @@ def test_fetch_and_store_calls_github_events_url(db_session, db_sessionmaker, mo
 
     fe.fetch_and_store()
 
-    mock_get.assert_called_once_with(fe.GITHUB_EVENTS_URL, timeout=fe.REQUEST_TIMEOUT)
+    mock_get.assert_called_once_with(fe.GITHUB_EVENTS_URL, headers=fe.HEADERS, timeout=fe.REQUEST_TIMEOUT)
