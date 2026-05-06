@@ -1,25 +1,60 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+.claude/
+
+# Git
 .git
 .gitignore
+.gitattributes
+.github/
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
 .venv
 venv
 env
 ENV
-__pycache__
-*.py[cod]
-*$py.class
+
+# Testing / coverage
+tests/
+pytest.ini
 .pytest_cache
+.coverage
+htmlcov
+.tox/
+
+# Type checkers / linters
 .mypy_cache
 .ruff_cache
 .pyright
-.coverage
-htmlcov
+
+# IDE / editor
 .idea
 .vscode
-.env
-.env.*
-!.env.example
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs / dev-only (not needed in runtime image)
 README.md
 RUNNING.md
+RAILWAY.md
+docs/
+scripts/
+requirements-dev.txt
 Dockerfile
 docker-compose*.yml
 .dockerignore
