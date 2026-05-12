@@ -1,5 +1,7 @@
 # TODO
 
+## How does the "rate limiting" work?
+
 ## Rotate GITHUB_TOKEN after Railway deploy
 
 The token currently in `.env` and pasted into Railway's `ingestor` + `enricher` Variables was echoed in a Claude Code chat transcript on **2026-05-06**. Treat as semi-exposed.
