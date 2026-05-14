@@ -33,8 +33,6 @@ The ingestion service polls the public events firehose; the enrichment service w
 - Migrations: Alembic
 - Ingestion + enrichment: Python + Requests
 - Dashboard: Streamlit
-- (Planned) Queue: Redis / Kafka
-- (Planned) Orchestration: Airflow
 
 ## Features
 
