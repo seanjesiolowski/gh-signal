@@ -14,8 +14,6 @@ This project builds a lightweight backend/data engineering system using the GitH
 
 ## Architecture
 
-![gh-signal architecture](docs/architecture.png)
-
 ```
 GitHub Events API ──► Ingestion Service ──┐
                                           ├──► PostgreSQL ──► FastAPI ──► Analytics Endpoints
