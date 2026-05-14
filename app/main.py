@@ -1,9 +1,16 @@
 from fastapi import FastAPI, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from .db import SessionLocal
 from .crud import get_top_repos, get_trending_languages, get_trending_topics
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # public read-only API, any origin can call it
+    allow_methods=["GET"],
+)
 
 
 def get_db():
