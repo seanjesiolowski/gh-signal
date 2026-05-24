@@ -66,7 +66,7 @@ def make_event():
         type="PushEvent",
         actor="alice",
         repo="org/repo",
-        created_at=datetime(2026, 4, 23, tzinfo=timezone.utc),
+        created_at=datetime.now(timezone.utc),
     ):
         return {
             "id": id,

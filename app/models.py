@@ -10,7 +10,7 @@ class Event(Base):
     type = Column(String, index=True)
     actor = Column(String, index=True)
     repo = Column(String, index=True)
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, index=True)
 
 class Repo(Base):
     __tablename__ = "repos"

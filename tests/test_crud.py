@@ -1,4 +1,12 @@
-from app.crud import create_event, get_top_repos, repos_needing_enrichment, upsert_repo
+from datetime import datetime, timedelta, timezone
+
+from app.crud import (
+    create_event,
+    get_top_repos,
+    prune_old_events,
+    repos_needing_enrichment,
+    upsert_repo,
+)
 from app.models import Event
 
 
@@ -71,3 +79,29 @@ def test_repos_needing_enrichment_empty_when_all_enriched(db_session, make_event
     upsert_repo(db_session, "org/done", {"language": "Go", "topics": []})
 
     assert repos_needing_enrichment(db_session) == []
+
+
+def test_prune_old_events_removes_rows_past_cutoff(db_session, make_event):
+    now = datetime.now(timezone.utc)
+    create_event(db_session, make_event(id="old", created_at=now - timedelta(days=8)))
+    create_event(db_session, make_event(id="fresh", created_at=now - timedelta(days=1)))
+
+    deleted = prune_old_events(db_session, days=7)
+
+    remaining = [r.id for r in db_session.query(Event).all()]
+    assert deleted == 1
+    assert remaining == ["fresh"]
+
+
+def test_prune_old_events_keeps_rows_exactly_at_cutoff(db_session, make_event):
+    now = datetime.now(timezone.utc)
+    create_event(db_session, make_event(id="edge", created_at=now - timedelta(days=7) + timedelta(seconds=1)))
+
+    deleted = prune_old_events(db_session, days=7)
+
+    assert deleted == 0
+    assert db_session.query(Event).count() == 1
+
+
+def test_prune_old_events_no_op_when_table_empty(db_session):
+    assert prune_old_events(db_session, days=7) == 0

@@ -1,7 +1,9 @@
 import os
 import requests
 from app.db import SessionLocal
-from app.crud import create_event
+from app.crud import create_event, prune_old_events
+
+RETENTION_DAYS = 7
 
 GITHUB_EVENTS_URL = "https://api.github.com/events"
 REQUEST_TIMEOUT = (5, 30)  # (connect, read) seconds
@@ -21,6 +23,8 @@ def fetch_and_store():
             except Exception as e:
                 print(f"Error: {e}")
                 db.rollback()
+
+        prune_old_events(db, days=RETENTION_DAYS)
     finally:
         db.close()
 

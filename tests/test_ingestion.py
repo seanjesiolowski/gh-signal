@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -51,6 +52,21 @@ def test_fetch_and_store_calls_github_events_url(db_session, db_sessionmaker, mo
     fe.fetch_and_store()
 
     mock_get.assert_called_once_with(fe.GITHUB_EVENTS_URL, headers=fe.HEADERS, timeout=fe.REQUEST_TIMEOUT)
+
+
+def test_fetch_and_store_prunes_events_older_than_retention(db_session, db_sessionmaker, make_event, monkeypatch):
+    monkeypatch.setattr(fe, "SessionLocal", db_sessionmaker)
+
+    stale = make_event(id="stale", created_at=datetime.now(timezone.utc) - timedelta(days=fe.RETENTION_DAYS + 1))
+    create_event(db_session, stale)
+
+    fake_response = MagicMock()
+    fake_response.json.return_value = []
+    monkeypatch.setattr(fe.requests, "get", lambda *a, **kw: fake_response)
+
+    fe.fetch_and_store()
+
+    assert db_session.query(Event).count() == 0
 
 
 def test_fetch_and_store_raises_on_http_error(db_session, db_sessionmaker, monkeypatch):
