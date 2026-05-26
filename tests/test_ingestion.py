@@ -54,6 +54,26 @@ def test_fetch_and_store_calls_github_events_url(db_session, db_sessionmaker, mo
     mock_get.assert_called_once_with(fe.GITHUB_EVENTS_URL, headers=fe.HEADERS, timeout=fe.REQUEST_TIMEOUT)
 
 
+def test_fetch_and_store_drops_non_building_event_types(db_session, db_sessionmaker, make_event, monkeypatch):
+    monkeypatch.setattr(fe, "SessionLocal", db_sessionmaker)
+
+    payload = [
+        make_event(id="push", type="PushEvent"),
+        make_event(id="watch", type="WatchEvent"),
+        make_event(id="fork", type="ForkEvent"),
+        make_event(id="pr", type="PullRequestEvent"),
+        make_event(id="sponsor", type="SponsorshipEvent"),
+    ]
+    fake_response = MagicMock()
+    fake_response.json.return_value = payload
+    monkeypatch.setattr(fe.requests, "get", lambda *a, **kw: fake_response)
+
+    fe.fetch_and_store()
+
+    stored = sorted(r.id for r in db_session.query(Event).all())
+    assert stored == ["pr", "push"]
+
+
 def test_fetch_and_store_prunes_events_older_than_retention(db_session, db_sessionmaker, make_event, monkeypatch):
     monkeypatch.setattr(fe, "SessionLocal", db_sessionmaker)
 

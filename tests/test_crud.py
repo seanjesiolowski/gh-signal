@@ -7,7 +7,7 @@ from app.crud import (
     repos_needing_enrichment,
     upsert_repo,
 )
-from app.models import Event
+from app.models import Event, Repo
 
 
 def test_create_event_inserts_row(db_session, make_event):
@@ -105,3 +105,31 @@ def test_prune_old_events_keeps_rows_exactly_at_cutoff(db_session, make_event):
 
 def test_prune_old_events_no_op_when_table_empty(db_session):
     assert prune_old_events(db_session, days=7) == 0
+
+
+def test_repos_needing_enrichment_includes_stale_with_recent_events(db_session, make_event):
+    # Per ADR-0003: a repo enriched longer ago than the retention horizon,
+    # but with recent activity, should be re-enriched.
+    now = datetime.now(timezone.utc)
+    create_event(db_session, make_event(id="recent", repo="org/stale", created_at=now))
+    upsert_repo(db_session, "org/stale", {"language": "Python", "topics": []})
+    db_session.query(Repo).filter_by(name="org/stale").update({"fetched_at": now - timedelta(days=10)})
+    db_session.commit()
+
+    assert "org/stale" in repos_needing_enrichment(db_session)
+
+
+def test_repos_needing_enrichment_excludes_recently_enriched(db_session, make_event):
+    # Enriched within the retention horizon — no refresh needed.
+    create_event(db_session, make_event(id="1", repo="org/fresh"))
+    upsert_repo(db_session, "org/fresh", {"language": "Python", "topics": []})
+
+    assert repos_needing_enrichment(db_session) == []
+
+
+def test_repos_needing_enrichment_excludes_dormant_repos(db_session):
+    # Per ADR-0003: dormant repos (no recent events) stay cached indefinitely.
+    # With retention pruning, "no recent events" means no events at all.
+    upsert_repo(db_session, "org/dormant", {"language": "Python", "topics": []})
+
+    assert repos_needing_enrichment(db_session) == []

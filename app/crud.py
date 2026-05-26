@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .models import Event, Repo
@@ -72,16 +72,23 @@ def get_trending_topics(db: Session, hours: int = 24, limit: int = 10):
     )
 
 
-def repos_needing_enrichment(db: Session, limit: int = 20) -> list[str]:
-    enriched = select(Repo.name)
-    return [
-        r[0] for r in
-        db.query(Event.repo)
-          .filter(Event.repo.notin_(enriched))
-          .distinct()
-          .limit(limit)
+def repos_needing_enrichment(db: Session, limit: int = 20, days: int = 7) -> list[str]:
+    # Per ADR-0003: a repo needs enrichment if it's never been enriched,
+    # OR if it has an event newer than fetched_at + retention horizon.
+    threshold = timedelta(days=days)
+    rows = (
+        db.query(Event.repo, func.max(Event.created_at), Repo.fetched_at)
+          .outerjoin(Repo, Repo.name == Event.repo)
+          .group_by(Event.repo, Repo.fetched_at)
           .all()
-    ]
+    )
+    needs: list[str] = []
+    for repo, latest, fetched_at in rows:
+        if fetched_at is None or latest > fetched_at + threshold:
+            needs.append(repo)
+            if len(needs) >= limit:
+                break
+    return needs
 
 
 def upsert_repo(db: Session, name: str, data: dict[str, Any]) -> None:

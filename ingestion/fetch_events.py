@@ -10,6 +10,20 @@ REQUEST_TIMEOUT = (5, 30)  # (connect, read) seconds
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"Bearer {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
 
+# Per ADR-0001: only "building activity" event types are stored.
+# Popularity events (WatchEvent, ForkEvent, etc.) are dropped at ingest.
+BUILDING_EVENT_TYPES = frozenset({
+    "PushEvent",
+    "PullRequestEvent",
+    "PullRequestReviewEvent",
+    "PullRequestReviewCommentEvent",
+    "IssuesEvent",
+    "IssueCommentEvent",
+    "ReleaseEvent",
+    "CommitCommentEvent",
+    "CreateEvent",
+})
+
 def fetch_and_store():
     db = SessionLocal()
     try:
@@ -18,6 +32,8 @@ def fetch_and_store():
         events = response.json()
 
         for event in events:
+            if event.get("type") not in BUILDING_EVENT_TYPES:
+                continue
             try:
                 create_event(db, event)
             except Exception as e:
