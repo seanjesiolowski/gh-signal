@@ -2,14 +2,16 @@
 
 A real-time data pipeline that ingests public GitHub events, processes them, and exposes analytics via an API.
 
+Signals recent language activity observed across public Github repos
+
 ## Overview
 
 This project builds a lightweight backend/data engineering system using the GitHub Events API. It demonstrates:
 
+- Analytics queries over event streams
 - API ingestion with rate limiting
 - Idempotent data processing
 - Relational data modeling
-- Analytics queries over event streams
 - REST API for insights
 
 ## Architecture
@@ -20,8 +22,6 @@ GitHub Events API ──► Ingestion Service ──┐
 GitHub Repos API  ──► Enrichment Service ─┘                       │
                                                                   └──► Streamlit Dashboard
 ```
-
-The ingestion service polls the public events firehose; the enrichment service walks the resulting repo names and pulls language/topic metadata so the analytics layer can answer "what are devs *actually building in* right now?"
 
 ## Tech Stack
 
