@@ -5,7 +5,12 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/github_events")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL is not set. Configure it in .env "
+        "(see .env.example) — no credential is baked into the code."
+    )
 # Railway provisions DATABASE_URL with the legacy postgres:// scheme that SQLAlchemy 2.x rejects.
 DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
