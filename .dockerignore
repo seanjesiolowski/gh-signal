@@ -50,8 +50,6 @@ Thumbs.db
 
 # Docs / dev-only (not needed in runtime image)
 README.md
-RUNNING.md
-RAILWAY.md
 docs/
 scripts/
 requirements-dev.txt
