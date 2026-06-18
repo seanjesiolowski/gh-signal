@@ -7,6 +7,15 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {"Authorization": f"Bearer {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
 REQUEST_TIMEOUT = (5, 30)  # (connect, read) seconds
 
+
+def _is_rate_limited(response) -> bool:
+    # GitHub signals an exhausted budget with 403/429 and X-RateLimit-Remaining: 0.
+    return (
+        response.status_code in (403, 429)
+        and response.headers.get("X-RateLimit-Remaining") == "0"
+    )
+
+
 def enrich_batch():
     db = SessionLocal()
     try:
@@ -20,6 +29,10 @@ def enrich_batch():
                 )
                 if r.status_code == 200:
                     upsert_repo(db, name, r.json())
+                elif _is_rate_limited(r):
+                    reset = r.headers.get("X-RateLimit-Reset", "?")
+                    print(f"Rate limited; stopping batch (resets at {reset})")
+                    break
                 else:
                     print(f"Skipping {name}: HTTP {r.status_code}")
             except Exception as e:
