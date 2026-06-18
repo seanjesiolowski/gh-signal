@@ -32,6 +32,12 @@ GitHub Repos API  ──► Enrichment Service ─┘                       │
 - Ingestion + enrichment: Python + Requests
 - Dashboard: Streamlit
 
+## Running it
+
+- **[docs/operations.md](docs/operations.md)** — run locally (Docker or native) and deploy to Railway.
+- **[CONTEXT.md](CONTEXT.md)** — domain language and the signal this project measures.
+- **[docs/adr/](docs/adr/)** — architecture decision records.
+
 ## Features
 
 ### Data Ingestion
