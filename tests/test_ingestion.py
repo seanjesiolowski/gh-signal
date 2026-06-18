@@ -132,6 +132,25 @@ def test_enrich_batch_skips_non_200_responses(db_session, db_sessionmaker, make_
     assert db_session.query(Repo).count() == 0
 
 
+def test_enrich_batch_stops_on_rate_limit(db_session, db_sessionmaker, make_event, monkeypatch):
+    monkeypatch.setattr(er, "SessionLocal", db_sessionmaker)
+    create_event(db_session, make_event(id="1", repo="org/a"))
+    create_event(db_session, make_event(id="2", repo="org/b"))
+
+    rate_limited = MagicMock()
+    rate_limited.status_code = 403
+    rate_limited.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "9999999999"}
+    mock_get = MagicMock(return_value=rate_limited)
+    monkeypatch.setattr(er.requests, "get", mock_get)
+
+    er.enrich_batch()
+
+    # Stop the batch on the first rate-limited response instead of burning the
+    # rest of the token budget on calls that will also be rejected.
+    assert mock_get.call_count == 1
+    assert db_session.query(Repo).count() == 0
+
+
 def test_enrich_batch_calls_repos_api_with_headers(db_session, db_sessionmaker, make_event, monkeypatch):
     monkeypatch.setattr(er, "SessionLocal", db_sessionmaker)
     create_event(db_session, make_event(id="1", repo="org/foo"))

@@ -9,9 +9,12 @@ return, see the [README](../README.md); for domain terms, see [CONTEXT.md](../CO
 
 Prerequisite: Docker Desktop (or Docker Engine + Compose v2).
 
-From the project root:
+First copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` (compose fails
+fast if it's unset). Then, from the project root:
 
 ```bash
+cp .env.example .env
+# edit .env: set POSTGRES_PASSWORD (any non-empty value for local dev)
 docker compose up --build
 ```
 

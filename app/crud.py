@@ -20,13 +20,19 @@ def prune_old_events(db: Session, days: int = 7) -> int:
 
 
 def create_event(db: Session, event_data: dict[str, Any]) -> None:
-    event = Event(
-        id=event_data["id"],
-        type=event_data["type"],
-        actor=event_data["actor"]["login"],
-        repo=event_data["repo"]["name"],
-        created_at=event_data["created_at"],
-    )
+    # Parse defensively: a malformed payload from the events firehose must raise a
+    # single, descriptive ValueError rather than an opaque KeyError/TypeError, so
+    # the caller can skip the bad record without the worker crashing.
+    try:
+        event = Event(
+            id=event_data["id"],
+            type=event_data["type"],
+            actor=event_data["actor"]["login"],
+            repo=event_data["repo"]["name"],
+            created_at=event_data["created_at"],
+        )
+    except (KeyError, TypeError) as e:
+        raise ValueError(f"malformed event payload: {e}") from e
     db.merge(event)
     db.commit()
 

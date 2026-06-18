@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from app.crud import (
     create_event,
     get_top_repos,
@@ -8,6 +10,22 @@ from app.crud import (
     upsert_repo,
 )
 from app.models import Event, Repo
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"id": "x"},  # missing type/actor/repo/created_at
+        {"id": "x", "type": "PushEvent", "actor": "alice", "repo": {"name": "org/r"}, "created_at": "t"},  # actor not a dict
+        {"id": "x", "type": "PushEvent", "actor": {"login": "a"}, "repo": "org/r", "created_at": "t"},  # repo not a dict
+        {"id": "x", "type": "PushEvent", "actor": {}, "repo": {"name": "org/r"}, "created_at": "t"},  # actor.login missing
+    ],
+)
+def test_create_event_raises_valueerror_on_malformed(db_session, payload):
+    with pytest.raises(ValueError):
+        create_event(db_session, payload)
+
+    assert db_session.query(Event).count() == 0
 
 
 def test_create_event_inserts_row(db_session, make_event):
