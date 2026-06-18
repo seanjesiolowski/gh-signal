@@ -15,4 +15,8 @@ COPY migrations ./migrations
 COPY alembic.ini .
 COPY dashboard.py .
 
+# Run as an unprivileged user rather than root.
+RUN useradd --create-home --uid 1000 appuser
+USER appuser
+
 EXPOSE 8000 8501
