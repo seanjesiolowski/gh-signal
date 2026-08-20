@@ -6,13 +6,13 @@ A real-time data pipeline that ingests public GitHub events, processes them, and
 
 ## Overview
 
-This project builds a lightweight backend/data engineering system using the GitHub Events API. It demonstrates:
+This builds a lightweight backend/data engineering system using the GitHub Events API and demonstrates the following:
 
-- Analytics queries over event streams
-- API ingestion with rate limiting
+- Analytics (queries) over event streams
+- API ingestion (with rate limiting)
 - Idempotent data processing
 - Relational data modeling
-- REST API for insights
+- REST API (for insights)
 
 ## Architecture
 
@@ -23,7 +23,7 @@ GitHub Repos API  ──► Enrichment Service ─┘                       │
                                                                   └──► Streamlit Dashboard
 ```
 
-## Tech Stack
+## The Stack
 
 - Backend: FastAPI
 - Database: PostgreSQL
