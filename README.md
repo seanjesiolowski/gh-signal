@@ -65,34 +65,3 @@ Returns the most active programming languages over a rolling time window, ranked
 
 #### `GET /topics/trending`
 Returns the most active GitHub topics over a rolling time window, ranked by event count. Topics are unnested from each repo's topic list so a single repo can contribute to multiple topic counts. Accepts `window` and `limit` with the same bounds as `/languages/trending`. Requires the enricher to have run.
-
-#### `GET /`
-Health check endpoint.
-
-## Example Responses
-
-**`GET /top-repos`**
-```json
-[
-  {"repo": "torvalds/linux", "count": 42},
-  {"repo": "microsoft/vscode", "count": 35}
-]
-```
-
-**`GET /languages/trending?window=24&limit=3`**
-```json
-[
-  {"language": "Python", "count": 198},
-  {"language": "TypeScript", "count": 154},
-  {"language": "Go", "count": 87}
-]
-```
-
-**`GET /topics/trending?window=24&limit=3`**
-```json
-[
-  {"topic": "machine-learning", "count": 73},
-  {"topic": "api", "count": 61},
-  {"topic": "cli", "count": 44}
-]
-```
