@@ -138,7 +138,7 @@ exceeds the included usage. Two changes keep it in budget:
 │ Railway project                                 │
 │  ┌───────────┐    ┌──────────┐    ┌──────────┐  │
 │  │ api       │    │ ingestor │    │ enricher │  │
-│  │ always-on │    │ cron 1m  │    │ cron 5m  │  │
+│  │ always-on │    │ cron 5m  │    │ cron 10m │  │
 │  └─────┬─────┘    └─────┬────┘    └────┬─────┘  │
 │        └────────────────┼──────────────┘        │
 │                         ▼                       │
@@ -161,10 +161,8 @@ exceeds the included usage. Two changes keep it in budget:
 3. **Configure each service:**
    - `api` — start command blank (Procfile handles it); enable a public domain;
      health check path `/`.
-   - `ingestor` — start `python -m ingestion.fetch_events`; cron `* * * * *`; no
-     networking; cron mode (runs on schedule, not continuously).
-   - `enricher` — start `python -m ingestion.enrich_repos`; cron `*/5 * * * *`;
-     no networking.
+   - `ingestor` — start `python -m ingestion.fetch_events`; cron `*/5 * * * *`; no networking; cron mode (runs on schedule, not continuously).
+   - `enricher` — start `python -m ingestion.enrich_repos`; cron `*/10 * * * *`; no networking.
 4. **Verify.** Hit `https://<your-api>.up.railway.app/` (returns
    `{"message": "GitHub Events API is running"}`). After a few cron firings,
    `/top-repos` shows data; after ~10 minutes `/languages/trending` and
@@ -191,8 +189,8 @@ older than 30 seconds, so read load on production stays trivial.
 | Service    | Mode       | Approx RAM | Notes                          |
 |------------|------------|------------|--------------------------------|
 | `api`      | always-on  | ~120 MB    | FastAPI + SQLAlchemy idle      |
-| `ingestor` | cron 1m    | ~80 MB×s   | ~5–10s of execution per minute |
-| `enricher` | cron 5m    | ~80 MB×s   | ~10–15s per run                |
+| `ingestor` | cron 5m    | ~80 MB×s   | ~5–10s of execution per 5m     |
+| `enricher` | cron 10m   | ~80 MB×s   | ~10–15s per run                |
 | Postgres   | always-on  | ~150 MB    | Managed                        |
 
 Expect $3–5/month, inside the included usage. If you run over, move the ingestor

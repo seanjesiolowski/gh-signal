@@ -41,12 +41,12 @@ GitHub Repos API  ──► Enrichment Service ─┘                       │
 ## Features
 
 ### Data Ingestion
-- Polls GitHub Events API every minute
+- Polls GitHub Events API every five minutes
 - Handles duplicate events using upsert logic
 - Extracts key fields: repo, actor, event type, timestamp
 
 ### Repo Enrichment
-- Background worker fetches repo metadata (language, topics) for repos that appear in the events stream
+- Every ten minutes, background worker fetches repo metadata (language, topics) for repos that appear in the events stream
 - Authenticated against GitHub with a personal access token (5,000 req/hr)
 - Skips deleted/private repos and rate-limit responses gracefully
 
