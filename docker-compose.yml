@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/github_events
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -60,7 +60,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/github_events
     ports:
-      - "8501:8501"
+      - "127.0.0.1:8501:8501"
     depends_on:
       migrate:
         condition: service_completed_successfully
